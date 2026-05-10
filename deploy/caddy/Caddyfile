@@ -1,0 +1,16 @@
+:4000 {
+    encode zstd gzip
+
+    @allowed path /v1/* /health /health/*
+
+    handle @allowed {
+        reverse_proxy litellm:4000
+    }
+
+    respond 404
+}
+
+:4001 {
+    encode zstd gzip
+    reverse_proxy litellm:4000
+}

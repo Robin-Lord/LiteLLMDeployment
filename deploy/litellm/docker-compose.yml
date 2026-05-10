@@ -1,0 +1,30 @@
+services:
+  litellm:
+    image: ghcr.io/berriai/litellm:${LITELLM_IMAGE_TAG}
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./config/litellm_config.yaml:/app/config.yaml:ro
+    command: ["--config", "/app/config.yaml", "--port", "4000", "--num_workers", "1"]
+    networks:
+      - gateway
+
+  caddy:
+    image: caddy:2.9.1
+    restart: unless-stopped
+    depends_on:
+      - litellm
+    env_file:
+      - .env
+    ports:
+      - "${TS_BIND_IP}:4000:4000"
+      - "${TS_BIND_IP}:4001:4001"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    networks:
+      - gateway
+
+networks:
+  gateway:
+    driver: bridge
